@@ -175,21 +175,21 @@ select ((4 * 4) / 10 ) + 25;
 1 row in set (0.00 sec) 
 
 6. 串接字符串
-  select CONCAT(f_name, " ", l_name) 
-  AS Name 
-  from employee_data 
-  where title = 'Marketing Executive'; 
-  +---------------+ 
-  | Name          | 
-  +---------------+ 
-  | Monica Sehgal | 
-  | Hal Simlai    | 
-  | Joseph Irvine | 
-  +---------------+ 
-  3 rows in set (0.00 sec) 
-  注意：这里用到CONCAT()函数，用来把字符串串接起来。另外，我们还用到以前学到的AS给结果列'CONCAT(f_name, " ", l_name)'起了个假名。
-  5.1 创建数据表
-  命令：create table <表名> ( <字段名1> <类型1> [,..<字段名n> <类型n>]);
+    select CONCAT(f_name, " ", l_name) 
+    AS Name 
+    from employee_data 
+    where title = 'Marketing Executive'; 
+    +---------------+ 
+    | Name          | 
+    +---------------+ 
+    | Monica Sehgal | 
+    | Hal Simlai    | 
+    | Joseph Irvine | 
+    +---------------+ 
+    3 rows in set (0.00 sec) 
+    注意：这里用到CONCAT()函数，用来把字符串串接起来。另外，我们还用到以前学到的AS给结果列'CONCAT(f_name, " ", l_name)'起了个假名。
+    5.1 创建数据表
+    命令：create table <表名> ( <字段名1> <类型1> [,..<字段名n> <类型n>]);
 
   例如，建立一个名为MyClass的表，
   字段名	数字类型	数据宽度	是否为空	是否主键		自动增加				默认值
@@ -385,3 +385,120 @@ insert into teacher values('''',''jack'',''深圳一中'',''1975-12-23'');
 3、将ADDRESS设为长度50的字符字段，而且缺省值为深圳。
 
 4、将YEAR设为日期字段。
+
+### 存储过程
+
+1. 存储过程相关命令操作
+
+   ```mysql
+   select name,type mysql.proc where db='bigdata';		-- 第一种方式，mysql.proc包括存储过程和存储函数
+   
+   show procedure status where db='bigdata';			-- 查看存储过程具体信息
+   
+   show function status where db='bigdata';			-- 查看存储函数具体信息
+   
+   show create procedure insert_emp;				   -- 查看存储过程创建语句
+   
+   drop procedure insert_emp;						  -- 删除存储过程
+   ```
+
+2. 存储过程控制语句
+
+   + 变量作用域
+
+     内部的变量在其作用域范围内享有更高的优先权，当执行到 end。变量时，内部变量消失，此时已经在其作用域外，变量不再可见了，应为在存储过程外再也不能找到这个申明的变量，但是你可以通过 out 参数或者将其值指派给会话变量来保存其值。
+
+   + 条件语句
+
+     if-then-else 语句
+
+     ```mysql
+     if parameter=0 then
+     update t set s1=s1+1;		-- 如果没有else，后面可以直接end if，结束if语句
+     else
+     update t set s1=s1+2;
+     end if
+     ```
+
+   + case语句
+
+     ```mysql
+     declare var int;
+     case var
+     when 0 then
+     insert into t values(18);
+     when 1 then
+     insert into t values(0);
+     else
+     insert into t values(100);
+     end case;
+     ```
+
+   + 循环语句
+
+     ```mysql
+     -- while···end while
+     /*
+     while 条件 do
+         --循环体
+     endwhile
+     */
+     declare var int default 0;
+     while var<6
+     do
+     insert into t values(var);
+     set var=var+1;
+     end while;
+     
+     -- repeat···· end repea
+     /*
+     repeat
+         --循环体
+     until 循环条件  
+     end repeat;
+     */
+     declare var int default 0;
+     repeat 
+     insert into t values(var);
+     set var=var+1;
+     until var>6			-- 末尾不可以加分号
+     end repeat;
+     
+     -- loop ·····endloop
+     /*
+     loop 循环不需要初始条件，这点和 while 循环相似，同时和 repeat 循环一样不需要结束条件, leave 语句的意义是离开循环。
+     */
+     declare var int default 0;
+     loop_lable: loop
+     insert into t values(var);
+     set var =var+1;
+     if var > 6 then
+     leave loop_lable;
+     end if
+     end loop
+     
+     /*
+     lable标号：
+     标号可以用在 begin repeat while 或者 loop 语句前，语句标号只能在合法的语句前面使用。可以跳出循环，使运行指令达到复合语句的最后一步。
+     */
+     ```
+
+   + iterate迭代
+
+     ```mysql
+     -- ITERATE 通过引用复合语句的标号,来从新开始复合语句
+     declare var int default 0;
+     loop_lable: loop
+     if var=3 then
+     iterate loop_lable;
+     end if
+     insert into t values(var);
+     set var=var+1;
+     if var>=5 then
+     leave loop_lable;
+     end if
+     end loop
+     ```
+
+     
+
